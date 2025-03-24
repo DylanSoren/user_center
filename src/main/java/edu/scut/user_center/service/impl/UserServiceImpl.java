@@ -77,16 +77,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
         return user.getId();
     }
-
-    public static void main(String[] args) {
-        String userAccount = "ysq666";
-        boolean isMatch = ReUtil.isMatch(".*(\\pP|\\pS|\\s+).*", userAccount);
-        if (isMatch) {
-            System.out.println("error");
-        } else {
-            System.out.println("ok");
-        }
-    }
 }
 
 
