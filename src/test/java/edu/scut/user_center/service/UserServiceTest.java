@@ -1,9 +1,13 @@
 package edu.scut.user_center.service;
 
 import edu.scut.user_center.model.entity.User;
+import edu.scut.user_center.service.impl.UserServiceImpl;
 import jakarta.annotation.Resource;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -30,5 +34,54 @@ class UserServiceTest {
         boolean save = userService.save(user);
         System.out.println(user.getId());
         assertTrue(save);
+    }
+
+    @Test
+    void testUserRegister() {
+        long result;
+        String userAccount = "";
+        String userPassword = "12345678";
+        String checkPassword = "12345678";
+        result = userService.userRegister(userAccount, userPassword, checkPassword);
+        Assertions.assertEquals(-1, result);
+
+        userAccount = "yyy";
+        result = userService.userRegister(userAccount, userPassword, checkPassword);
+        Assertions.assertEquals(-1, result);
+
+        userAccount = "yyyyyy";
+        userPassword = "1234567";
+        checkPassword = "1234567";
+        result = userService.userRegister(userAccount, userPassword, checkPassword);
+        Assertions.assertEquals(-1, result);
+
+        userAccount = "yyyyyy";
+        userPassword = "12345678";
+        checkPassword = "12345678";
+        userService.userRegister(userAccount, userPassword, checkPassword);
+        result = userService.userRegister(userAccount, userPassword, checkPassword);
+        Assertions.assertEquals(-1, result);
+
+        userAccount = "yyyyyy";
+        userPassword = "12345678";
+        checkPassword = "12345678";
+        result = userService.userRegister(userAccount, userPassword, checkPassword);
+        Assertions.assertEquals(-1, result);
+
+        userAccount = "ysq666$%&";
+        result = userService.userRegister(userAccount, userPassword, checkPassword);
+        Assertions.assertEquals(-1, result);
+
+        userAccount = "yyyyyy";
+        userPassword = "12345678";
+        checkPassword = "123456789";
+        result = userService.userRegister(userAccount, userPassword, checkPassword);
+        Assertions.assertEquals(-1, result);
+
+        userAccount = "yyyyyy666";
+        userPassword = "12345678";
+        checkPassword = "12345678";
+        result = userService.userRegister(userAccount, userPassword, checkPassword);
+        Assertions.assertNotEquals(-1, result);
     }
 }

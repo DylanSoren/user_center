@@ -8,12 +8,12 @@ spring:
     password: ysq666666
 
 server:
-  port: 8080
+  port: 8080 # 确保为 false
 
 mybatis-plus:
   configuration:
-    map-underscore-to-camel-case: false  # 关闭驼峰转下划线
+    map-underscore-to-camel-case: true  # 关闭驼峰转下划线
 
 logging:
   level:
-    com.zhangguoye.security: info
+    com.zhangguoye.security: debug
