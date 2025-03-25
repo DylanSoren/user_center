@@ -41,47 +41,47 @@ class UserServiceTest {
         long result;
         String userAccount = "";
         String userPassword = "12345678";
-        String checkPassword = "12345678";
-        result = userService.userRegister(userAccount, userPassword, checkPassword);
+        String confirmPassword = "12345678";
+        result = userService.userRegister(userAccount, userPassword, confirmPassword);
         Assertions.assertEquals(-1, result);
 
         userAccount = "yyy";
-        result = userService.userRegister(userAccount, userPassword, checkPassword);
+        result = userService.userRegister(userAccount, userPassword, confirmPassword);
         Assertions.assertEquals(-1, result);
 
         userAccount = "yyyyyy";
         userPassword = "1234567";
-        checkPassword = "1234567";
-        result = userService.userRegister(userAccount, userPassword, checkPassword);
+        confirmPassword = "1234567";
+        result = userService.userRegister(userAccount, userPassword, confirmPassword);
         Assertions.assertEquals(-1, result);
 
         userAccount = "yyyyyy";
         userPassword = "12345678";
-        checkPassword = "12345678";
-        userService.userRegister(userAccount, userPassword, checkPassword);
-        result = userService.userRegister(userAccount, userPassword, checkPassword);
+        confirmPassword = "12345678";
+        userService.userRegister(userAccount, userPassword, confirmPassword);
+        result = userService.userRegister(userAccount, userPassword, confirmPassword);
         Assertions.assertEquals(-1, result);
 
         userAccount = "yyyyyy";
         userPassword = "12345678";
-        checkPassword = "12345678";
-        result = userService.userRegister(userAccount, userPassword, checkPassword);
+        confirmPassword = "12345678";
+        result = userService.userRegister(userAccount, userPassword, confirmPassword);
         Assertions.assertEquals(-1, result);
 
         userAccount = "ysq666$%&";
-        result = userService.userRegister(userAccount, userPassword, checkPassword);
+        result = userService.userRegister(userAccount, userPassword, confirmPassword);
         Assertions.assertEquals(-1, result);
 
         userAccount = "yyyyyy";
         userPassword = "12345678";
-        checkPassword = "123456789";
-        result = userService.userRegister(userAccount, userPassword, checkPassword);
+        confirmPassword = "123456789";
+        result = userService.userRegister(userAccount, userPassword, confirmPassword);
         Assertions.assertEquals(-1, result);
 
         userAccount = "yyyyyy666";
         userPassword = "12345678";
-        checkPassword = "12345678";
-        result = userService.userRegister(userAccount, userPassword, checkPassword);
+        confirmPassword = "12345678";
+        result = userService.userRegister(userAccount, userPassword, confirmPassword);
         Assertions.assertNotEquals(-1, result);
     }
 }
