@@ -8,12 +8,17 @@ spring:
     password: ysq666666
 
 server:
-  port: 8080 # 确保为 false
+  port: 8080
 
 mybatis-plus:
+  global-config:
+    db-config:
+      logic-delete-field: isDelete
+      logic-delete-value: 1
+      logic-not-delete-value: 0
   configuration:
-    map-underscore-to-camel-case: true  # 关闭驼峰转下划线
+    map-underscore-to-camel-case: true
 
 logging:
   level:
-    com.zhangguoye.security: debug
+    edu.scut.user_center: info

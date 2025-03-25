@@ -1,4 +1,5 @@
 package edu.scut.user_center.service.impl;
+import java.util.Date;
 
 import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.util.ReUtil;
@@ -9,6 +10,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import edu.scut.user_center.model.entity.User;
 import edu.scut.user_center.service.UserService;
 import edu.scut.user_center.mapper.UserMapper;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +28,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     // 盐值，混淆密码
     private static final String SALT = "YSQ";
+
+    // 用户状态
+    private static final String USER_LOGIN_STATE = "userLoginState";
 
     /**
      * 用户注册
@@ -85,15 +90,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
 
     /**
-     * 用户登录
+     *
      * @param userAccount 用户账号
      * @param userPassword 用户密码
-     * @return 用户信息（脱敏后）
+     * @param request HTTP请求
+     * @return 脱敏后的用户信息
      */
     @Override
-    public User userLogin(String userAccount, String userPassword) {
+    public User userLogin(String userAccount, String userPassword, HttpServletRequest request) {
         // 非空校验
-        if (CharSequenceUtil.hasBlank(userAccount, userPassword, confirmPassword)) {
+        if (CharSequenceUtil.hasBlank(userAccount, userPassword)) {
             return null;
         }
 
@@ -123,7 +129,23 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             log.info("user Login failed, userAccount cannot match userPassword");
             return null;
         }
-        return user;
+
+        // 用户信息脱敏
+        User safetyUser = new User();
+        safetyUser.setId(user.getId());
+        safetyUser.setUsername(user.getUsername());
+        safetyUser.setUserAccount(user.getUserAccount());
+        safetyUser.setAvatarUrl(user.getAvatarUrl());
+        safetyUser.setGender(user.getGender());
+        safetyUser.setPhone(user.getPhone());
+        safetyUser.setEmail(user.getEmail());
+        safetyUser.setUserStatus(user.getUserStatus());
+        safetyUser.setCreateTime(user.getCreateTime());
+
+        // 记录用户状态
+        request.getSession().setAttribute(USER_LOGIN_STATE, safetyUser);
+
+        return safetyUser;
     }
 }
 

@@ -2,6 +2,7 @@ package edu.scut.user_center.service;
 
 import edu.scut.user_center.model.entity.User;
 import com.baomidou.mybatisplus.extension.service.IService;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
 * @author DS
@@ -10,5 +11,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
 */
 public interface UserService extends IService<User> {
     long userRegister(String userAccount, String userPassword, String confirmPassword);
-    User userLogin(String userAccount, String userPassword);
+    User userLogin(String userAccount, String userPassword, HttpServletRequest request);
 }
