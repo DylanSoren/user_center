@@ -3,6 +3,7 @@ package edu.scut.user_center.exception;
 import edu.scut.user_center.common.StatusCode;
 
 public class ThrowUtils {
+    private ThrowUtils() {}
 
     /**
      * 条件成立则抛异常
