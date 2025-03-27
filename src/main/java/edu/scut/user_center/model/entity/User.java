@@ -2,6 +2,7 @@ package edu.scut.user_center.model.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
 import lombok.Data;
@@ -60,6 +61,11 @@ public class User implements Serializable {
     private Integer userStatus;
 
     /**
+     * 用户角色 0 - 普通用户   1 - 管理员
+     */
+    private Integer userRole;
+
+    /**
      * 创建时间
      */
     private Date createTime;
@@ -75,6 +81,7 @@ public class User implements Serializable {
     @TableLogic
     private Integer isDelete;
 
+    @Serial
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 }

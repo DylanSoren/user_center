@@ -4,6 +4,8 @@ import edu.scut.user_center.model.entity.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.util.List;
+
 /**
 * @author DS
 * @description 针对表【user(用户)】的数据库操作Service
@@ -11,5 +13,12 @@ import jakarta.servlet.http.HttpServletRequest;
 */
 public interface UserService extends IService<User> {
     long userRegister(String userAccount, String userPassword, String confirmPassword);
+
     User userLogin(String userAccount, String userPassword, HttpServletRequest request);
+
+    User getSafetyUser(User originUser);
+
+    List<User> searchUsers(String username);
+
+    Boolean deleteUser(Long id);
 }

@@ -12,6 +12,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static edu.scut.user_center.constant.UserConstant.USER_LOGIN_STATE;
+
 /**
 * @author DS
 * @description 针对表【user(用户)】的数据库操作Service实现
@@ -24,9 +29,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     // 盐值，混淆密码
     private static final String SALT = "YSQ";
-
-    // 用户状态
-    private static final String USER_LOGIN_STATE = "userLoginState";
 
     /**
      * 用户注册
@@ -126,22 +128,61 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             return null;
         }
 
-        // 用户信息脱敏
-        User safetyUser = new User();
-        safetyUser.setId(user.getId());
-        safetyUser.setUsername(user.getUsername());
-        safetyUser.setUserAccount(user.getUserAccount());
-        safetyUser.setAvatarUrl(user.getAvatarUrl());
-        safetyUser.setGender(user.getGender());
-        safetyUser.setPhone(user.getPhone());
-        safetyUser.setEmail(user.getEmail());
-        safetyUser.setUserStatus(user.getUserStatus());
-        safetyUser.setCreateTime(user.getCreateTime());
+        User safetyUser = getSafetyUser(user);
 
         // 记录用户状态
         request.getSession().setAttribute(USER_LOGIN_STATE, safetyUser);
 
         return safetyUser;
+    }
+
+    /**
+     * 用户信息脱敏
+     * @param originUser 原始用户信息
+     * @return 脱敏后的用户信息
+     */
+    @Override
+    public User getSafetyUser(User originUser) {
+        User safetyUser = new User();
+        safetyUser.setId(originUser.getId());
+        safetyUser.setUsername(originUser.getUsername());
+        safetyUser.setUserAccount(originUser.getUserAccount());
+        safetyUser.setAvatarUrl(originUser.getAvatarUrl());
+        safetyUser.setGender(originUser.getGender());
+        safetyUser.setPhone(originUser.getPhone());
+        safetyUser.setEmail(originUser.getEmail());
+        safetyUser.setUserStatus(originUser.getUserStatus());
+        safetyUser.setUserRole(originUser.getUserRole());
+        safetyUser.setCreateTime(originUser.getCreateTime());
+        return safetyUser;
+    }
+
+    /**
+     * 查询用户
+     * @param username 用户名
+     * @return 用户列表
+     */
+    @Override
+    public List<User> searchUsers(String username) {
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        if (!CharSequenceUtil.hasBlank(username)) {
+            queryWrapper.like("username", username);
+        }
+        List<User> userList = this.list(queryWrapper);
+        return userList.stream().map(this::getSafetyUser).toList();
+    }
+
+    /**
+     * 删除用户
+     * @param id 用户ID
+     * @return 是否删除成功
+     */
+    @Override
+    public Boolean deleteUser(Long id) {
+        if (id <= 0) {
+            return false;
+        }
+        return this.removeById(id);
     }
 }
 

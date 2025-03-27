@@ -6,6 +6,9 @@ spring:
     url: jdbc:mysql://localhost:3306/user_center
     username: root
     password: ysq666666
+  # session失效时间
+  session:
+    timeout: 86400
 
 server:
   port: 8080

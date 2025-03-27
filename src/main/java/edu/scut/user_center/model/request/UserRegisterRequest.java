@@ -2,6 +2,7 @@ package edu.scut.user_center.model.request;
 
 import lombok.Data;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 /**
@@ -10,11 +11,12 @@ import java.io.Serializable;
  */
 @Data
 public class UserRegisterRequest implements Serializable {
-    private static final long serialVersionUID = 2494470058836843507L;
-
     private String userAccount;
 
     private String userPassword;
 
     private String confirmPassword;
+
+    @Serial
+    private static final long serialVersionUID = 2494470058836843507L;
 }
