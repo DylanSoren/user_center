@@ -5,6 +5,7 @@ import cn.hutool.core.util.ReUtil;
 import cn.hutool.crypto.SecureUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import edu.scut.user_center.exception.ThrowUtils;
 import edu.scut.user_center.model.entity.User;
 import edu.scut.user_center.service.UserService;
 import edu.scut.user_center.mapper.UserMapper;
@@ -13,9 +14,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
+import static edu.scut.user_center.common.StatusCode.*;
 import static edu.scut.user_center.constant.UserConstant.USER_LOGIN_STATE;
+import static edu.scut.user_center.constant.UserConstant.USER_LOGOUT_SUCCESS;
 
 /**
 * @author DS
@@ -40,36 +42,26 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Override
     public long userRegister(String userAccount, String userPassword, String confirmPassword) {
         // 非空校验
-        if (CharSequenceUtil.hasBlank(userAccount, userPassword, confirmPassword)) {
-            return -1;
-        }
+        ThrowUtils.throwIf(CharSequenceUtil.hasBlank(userAccount, userPassword, confirmPassword),
+                PARAMS_ERROR, "账号为空");
 
         // 长度校验
-        if (userAccount.length() < 4) {
-            return -1;
-        }
-        if (userPassword.length() < 8 || confirmPassword.length() < 8) {
-            return -1;
-        }
+        ThrowUtils.throwIf(userAccount.length() < 4, PARAMS_ERROR, "账号长度不能小于4");
+        ThrowUtils.throwIf(userPassword.length() < 8, PARAMS_ERROR, "密码长度不能小于8");
 
         // 账号不能包含特殊字符
-        boolean isMatch = ReUtil.isMatch(".*(\\pP|\\pS|\\s+).*", userAccount);
-        if (isMatch) {
-            return -1;
-        }
+        ThrowUtils.throwIf(ReUtil.isMatch(".*(\\pP|\\pS|\\s+).*", userAccount),
+                PARAMS_ERROR, "账号不能包含特殊字符");
 
         // 密码和确认密码要一致
-        if (!userPassword.equals(confirmPassword)) {
-            return -1;
-        }
+        ThrowUtils.throwIf(!userPassword.equals(confirmPassword),
+                PARAMS_ERROR, "两次输入的密码不一致");
 
         // 账号不能重复
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("user_account", userAccount);
         long count = this.count(queryWrapper);
-        if (count > 0) {
-            return -1;
-        }
+        ThrowUtils.throwIf(count > 0, PARAMS_ERROR, "账号已存在");
 
         // 密码加密
         String securePassword = SecureUtil.md5(SALT + userPassword);
@@ -79,9 +71,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         user.setUserAccount(userAccount);
         user.setUserPassword(securePassword);
         boolean saved = this.save(user);
-        if (!saved) {
-            return -1;
-        }
+        ThrowUtils.throwIf(!saved, OPERATION_ERROR, "注册失败");
 
         return user.getId();
     }
@@ -97,23 +87,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Override
     public User userLogin(String userAccount, String userPassword, HttpServletRequest request) {
         // 非空校验
-        if (CharSequenceUtil.hasBlank(userAccount, userPassword)) {
-            return null;
-        }
+        ThrowUtils.throwIf(CharSequenceUtil.hasBlank(userAccount, userPassword),
+                PARAMS_ERROR, "账号为空");
 
         // 长度校验
-        if (userAccount.length() < 4) {
-            return null;
-        }
-        if (userPassword.length() < 8) {
-            return null;
-        }
+        ThrowUtils.throwIf(userAccount.length() < 4, PARAMS_ERROR, "账号长度不能小于4");
+        ThrowUtils.throwIf(userPassword.length() < 8, PARAMS_ERROR, "密码长度不能小于8");
 
         // 账号不能包含特殊字符
-        boolean isMatch = ReUtil.isMatch(".*(\\pP|\\pS|\\s+).*", userAccount);
-        if (isMatch) {
-            return null;
-        }
+        ThrowUtils.throwIf(ReUtil.isMatch(".*(\\pP|\\pS|\\s+).*", userAccount),
+                PARAMS_ERROR, "账号不能包含特殊字符");
 
         // 校验密码是否输入正确
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
@@ -123,10 +106,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         queryWrapper.eq("user_password", securePassword);
         User user = this.getOne(queryWrapper);
         // 用户不存在
-        if (user == null) {
-            log.info("user Login failed, userAccount cannot match userPassword");
-            return null;
-        }
+        ThrowUtils.throwIf(user == null, NOT_FOUND_ERROR, "用户不存在");
 
         User safetyUser = getSafetyUser(user);
 
@@ -134,6 +114,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         request.getSession().setAttribute(USER_LOGIN_STATE, safetyUser);
 
         return safetyUser;
+    }
+
+    /**
+     * 用户注销
+     * @param request HTTP请求
+     * @return 注销返回信息
+     */
+    @Override
+    public Integer userLogout(HttpServletRequest request) {
+        request.getSession().removeAttribute(USER_LOGIN_STATE);
+        return USER_LOGOUT_SUCCESS;
     }
 
     /**
@@ -158,6 +149,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     /**
+     * 获取当前用户
+     * @param request HTTP请求
+     * @return 脱敏后的用户信息
+     */
+    @Override
+    public User getCurrectUser(HttpServletRequest request) {
+        return (User) request.getSession().getAttribute(USER_LOGIN_STATE);
+    }
+
+    /**
      * 查询用户
      * @param username 用户名
      * @return 用户列表
@@ -179,9 +180,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
      */
     @Override
     public Boolean deleteUser(Long id) {
-        if (id <= 0) {
-            return false;
-        }
+        ThrowUtils.throwIf(id <= 0, PARAMS_ERROR, "用户ID应为正整数");
         return this.removeById(id);
     }
 }

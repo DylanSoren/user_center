@@ -1,6 +1,9 @@
 package edu.scut.user_center.controller;
 
 import cn.hutool.core.text.CharSequenceUtil;
+import edu.scut.user_center.common.BaseResponse;
+import edu.scut.user_center.common.ResultUtils;
+import edu.scut.user_center.exception.ThrowUtils;
 import edu.scut.user_center.model.entity.User;
 import edu.scut.user_center.model.request.UserLoginRequest;
 import edu.scut.user_center.model.request.UserRegisterRequest;
@@ -9,9 +12,10 @@ import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import static edu.scut.user_center.common.StatusCode.NO_AUTH_ERROR;
+import static edu.scut.user_center.common.StatusCode.PARAMS_ERROR;
 import static edu.scut.user_center.constant.UserConstant.ADMIN_ROLE;
 import static edu.scut.user_center.constant.UserConstant.USER_LOGIN_STATE;
 
@@ -26,50 +30,58 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/register")
-    public Long userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
-        if (userRegisterRequest == null) {
-            return null;
-        }
+    public BaseResponse<Long> userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
+        ThrowUtils.throwIf(userRegisterRequest == null, PARAMS_ERROR);
 
         String userAccount = userRegisterRequest.getUserAccount();
         String userPassword = userRegisterRequest.getUserPassword();
         String confirmPassword = userRegisterRequest.getConfirmPassword();
-        if (CharSequenceUtil.hasBlank(userAccount, userPassword, confirmPassword)) {
-            return null;
-        }
+        ThrowUtils.throwIf(CharSequenceUtil.hasBlank(userAccount, userPassword, confirmPassword),
+                PARAMS_ERROR);
 
-        return userService.userRegister(userAccount, userPassword, confirmPassword);
+        long id = userService.userRegister(userAccount, userPassword, confirmPassword);
+        return ResultUtils.success(id);
     }
 
     @PostMapping("/login")
-    public User userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
-        if (userLoginRequest == null) {
-            return null;
-        }
+    public BaseResponse<User> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
+        ThrowUtils.throwIf(userLoginRequest == null || request == null, PARAMS_ERROR);
 
         String userAccount = userLoginRequest.getUserAccount();
         String userPassword = userLoginRequest.getUserPassword();
-        if (CharSequenceUtil.hasBlank(userAccount, userPassword)) {
-            return null;
-        }
 
-        return userService.userLogin(userAccount, userPassword, request);
+        ThrowUtils.throwIf(CharSequenceUtil.hasBlank(userAccount, userPassword), PARAMS_ERROR);
+
+        User user = userService.userLogin(userAccount, userPassword, request);
+        return ResultUtils.success(user);
+    }
+
+    @PostMapping("/logout")
+    public BaseResponse<Integer> userLogout(HttpServletRequest request) {
+        ThrowUtils.throwIf(request == null, PARAMS_ERROR);
+        Integer result = userService.userLogout(request);
+        return ResultUtils.success(result);
+    }
+
+    @GetMapping("/current")
+    public BaseResponse<User> getCurrectUser(HttpServletRequest request) {
+        ThrowUtils.throwIf(request == null, PARAMS_ERROR);
+        User currectUser = userService.getCurrectUser(request);
+        return ResultUtils.success(currectUser);
     }
 
     @GetMapping("/search")
-    public List<User> searchUsers(String username, HttpServletRequest request) {
-        if (isNotAdmin(request)) {
-            return new ArrayList<>();
-        }
-        return userService.searchUsers(username);
+    public BaseResponse<List<User>> searchUsers(String username, HttpServletRequest request) {
+        ThrowUtils.throwIf(isNotAdmin(request), NO_AUTH_ERROR);
+        List<User> users = userService.searchUsers(username);
+        return ResultUtils.success(users);
     }
 
     @PostMapping("/delete")
-    public Boolean deleteUser(@RequestBody Long id, HttpServletRequest request) {
-        if (isNotAdmin(request)) {
-            return false;
-        }
-        return userService.deleteUser(id);
+    public BaseResponse<Boolean> deleteUser(@RequestBody Long id, HttpServletRequest request) {
+        ThrowUtils.throwIf(isNotAdmin(request), NO_AUTH_ERROR);
+        Boolean result = userService.deleteUser(id);
+        return ResultUtils.success(result);
     }
 
     /**
